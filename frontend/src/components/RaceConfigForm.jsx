@@ -6,7 +6,7 @@ export default function RaceConfigForm({ onFormSubmit, isOptimizing }) {
   const [initialData, setInitialData] = useState(null);
   const [ecurieId, setEcurieId] = useState('');
   const [circuitId, setCircuitId] = useState('');
-  const [nombreTours, setNombreTours] = useState(55);
+  // `nombreTours` is computed server-side from circuit metadata
   const [meteoInitiale, setMeteoInitiale] = useState(1);
   const [tourPluie, setTourPluie] = useState(0);
   const [gommeDepart, setGommeDepart] = useState('Medium');
@@ -67,7 +67,6 @@ export default function RaceConfigForm({ onFormSubmit, isOptimizing }) {
     onFormSubmit({
       ecurie: parseInt(ecurieId),
       circuit: parseInt(circuitId),
-      nombre_tours: parseInt(nombreTours),
       meteo_initiale: parseInt(meteoInitiale),
       tour_pluie: parseInt(tourPluie),
       gomme_depart: gommeDepart,
@@ -142,21 +141,12 @@ export default function RaceConfigForm({ onFormSubmit, isOptimizing }) {
             )}
           </div>
 
-          {/* Nombre de tours */}
+          {/* Nombre de tours officiel (déterminé par le circuit) */}
           <div className="form-group">
-            <label className="form-label">
-              Nombre de Tours <i className="bi bi-info-circle"></i> 
-              <span className="fw-bold text-warning">{nombreTours}</span>
-            </label>
-            <input
-              type="range"
-              min="20"
-              max="78"
-              step="1"
-              className="form-range"
-              value={nombreTours}
-              onChange={(e) => setNombreTours(e.target.value)}
-            />
+            <label className="form-label">Nombre de Tours (officiel)</label>
+            <div className="read-only-field fw-bold text-warning">
+              {circuitDetails?.official_laps || (initialData.circuits.find(c=>c.id==circuitId)?.official_laps) || 55}
+            </div>
           </div>
 
           {/* Météo Initiale */}

@@ -103,7 +103,8 @@ class RaceUnifiedView(View):
 
         ecurie     = form.cleaned_data["ecurie"]
         circuit    = form.cleaned_data["circuit"]
-        N          = form.cleaned_data["nombre_tours"]
+        # Nombre de tours déterminé par les métadonnées du circuit
+        N = circuit.official_laps or 55
         t_base     = form.cleaned_data["t_base"]
         meteo_idx  = form.cleaned_data["meteo_initiale"]
         tour_pluie = form.cleaned_data.get("tour_pluie") or None
@@ -171,11 +172,17 @@ def api_circuit_details(request):
             .exclude(pk=circuit_id)
             .values_list("nom_circuit", flat=True)[:3]
         )
+        # Tyre profiles summary
+        tyres = list(Pneumatique.objects.all().values('type_gomme', 'alpha', 'duree_max_tours', 'conditions'))
         return JsonResponse({
-            "cluster_label":  circuit.cluster_label,
-            "temp_piste_moy": circuit.temp_piste_moy,
-            "proba_pluie":    circuit.proba_pluie,
-            "similaires":     similaires,
+            "cluster_label":   circuit.cluster_label,
+            "temp_piste_moy":  circuit.temp_piste_moy,
+            "proba_pluie":     circuit.proba_pluie,
+            "similaires":      similaires,
+            "length_km":       circuit.length_km,
+            "race_distance_km": circuit.race_distance_km,
+            "official_laps":   circuit.official_laps,
+            "tyres":           tyres,
         })
     except CircuitCluster.DoesNotExist:
         return JsonResponse({"error": "Introuvable"}, status=404)
@@ -199,7 +206,15 @@ def export_csv(request):
 def api_initial_data(request):
     """Retourne les écuries, circuits et choix pour alimenter le React frontend."""
     ecuries = list(Ecurie.objects.all().order_by('nom').values('id', 'nom'))
-    circuits = list(CircuitCluster.objects.all().order_by('nom_circuit').values('id', 'nom_circuit'))
+    circuits_qs = CircuitCluster.objects.all().order_by('nom_circuit')
+    circuits = []
+    for c in circuits_qs:
+        circuits.append({
+            'id': c.id,
+            'nom_circuit': c.nom_circuit,
+            'length_km': c.length_km,
+            'official_laps': c.official_laps,
+        })
     gomme_choices = [
         {'value': 'Soft', 'label': '🔴 Soft – Tendres (18–22 tours)'},
         {'value': 'Medium', 'label': '🟡 Medium – Médium (26–32 tours)'},
@@ -232,7 +247,8 @@ def api_optimize(request):
 
     ecurie_id = data.get("ecurie")
     circuit_id = data.get("circuit")
-    N = int(data.get("nombre_tours", 55))
+    # Accept optional client override, otherwise compute from circuit metadata
+    N_payload = data.get("nombre_tours")
     t_base = float(data.get("t_base", 90.0))
     meteo_idx = int(data.get("meteo_initiale", 1))
     tour_pluie = data.get("tour_pluie")
@@ -247,6 +263,15 @@ def api_optimize(request):
         circuit = CircuitCluster.objects.get(pk=circuit_id)
     except (Ecurie.DoesNotExist, CircuitCluster.DoesNotExist):
         return JsonResponse({"error": "Écurie ou circuit introuvable"}, status=404)
+
+    # Determine N
+    if N_payload is not None:
+        try:
+            N = int(N_payload)
+        except Exception:
+            N = circuit.official_laps or 55
+    else:
+        N = circuit.official_laps or 55
 
     meteo_init = {1: "Sec chaud", 2: "Piste humide", 3: "Pluie forte"}.get(meteo_idx, "Sec chaud")
     weather_forecast = _build_weather_forecast(meteo_init, N, tour_pluie)

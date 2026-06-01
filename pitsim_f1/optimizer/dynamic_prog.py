@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any, Tuple, Optional
 from core.models import Ecurie, Pneumatique, CircuitCluster
 from race.ml.degradation_ml import predictor
 from race.simulation_engine import SimulationEngine
@@ -12,12 +12,19 @@ class RaceOptimizer:
     par Programmation Dynamique en O(K * N^2).
     """
 
-    def __init__(self, ecurie_nom: str, circuit_nom: str, N: int = 70, t_base: float = 90.0, beta_essence: float = 0.05):
+    def __init__(self, ecurie_nom: str, circuit_nom: str, N: Optional[int] = None, t_base: float = 90.0, beta_essence: float = 0.05):
         self.N = N
         self.K_max = 3
         
         # Initialisation du moteur F2
         self.engine = SimulationEngine(ecurie_nom, circuit_nom, t_base, beta_essence)
+
+        # If N was not provided by the caller, derive it from the circuit metadata
+        if self.N is None:
+            try:
+                self.N = int(self.engine.circuit.official_laps or 55)
+            except Exception:
+                self.N = 55
         
         # Temps perdu dans les stands (T_pit = T_pitlane + T_immob_ecurie)
         # On suppose que T_pitlane est d'environ 20s (constante métier standard) 

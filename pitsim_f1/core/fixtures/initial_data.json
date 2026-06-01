@@ -35,7 +35,9 @@
       "degen_moy": 0.25,
       "freq_safety_car": 30.0,
       "proba_pluie": 5.0,
-      "cluster_label": "Haute Usure Thermique"
+      "cluster_label": "Haute Usure Thermique",
+      "length_km": 5.412,
+      "race_distance_km": 305.0
     }
   },
   {
@@ -50,7 +52,9 @@
       "degen_moy": 0.10,
       "freq_safety_car": 80.0,
       "proba_pluie": 15.0,
-      "cluster_label": "Urbain / Forte Traction"
+      "cluster_label": "Urbain / Forte Traction",
+      "length_km": 3.337,
+      "race_distance_km": 260.0
     }
   },
   {

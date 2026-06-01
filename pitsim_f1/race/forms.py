@@ -97,18 +97,8 @@ class RaceConfigForm(forms.Form):
     )
 
     # --- Nombre de tours ---
-    nombre_tours = forms.IntegerField(
-        min_value=20, max_value=78,
-        initial=55,
-        label="Nombre de Tours",
-        widget=forms.NumberInput(attrs={
-            'type': 'range',
-            'min': '20', 'max': '78', 'step': '1',
-            'class': 'form-range custom-slider',
-            'id': 'id_nombre_tours',
-            'oninput': 'document.getElementById("nb_tours_val").innerText = this.value;'
-        })
-    )
+    # `nombre_tours` is computed server-side from circuit metadata and therefore
+    # intentionally removed from the user-editable form.
 
     # --- Temps de base (t_base) ---
     t_base = forms.FloatField(

@@ -9,7 +9,7 @@ import { TeamSelectionStep } from '@/components/steps/TeamSelectionStep';
 import { CircuitSelectionStep } from '@/components/steps/CircuitSelectionStep';
 import { TireSelectionStep } from '@/components/steps/TireSelectionStep';
 import { ResultsDashboard } from '@/components/steps/ResultsDashboard';
-import { spring } from '@/lib/motionVariants';
+import { stepTransition } from '@/lib/motionVariants';
 import type { TeamTheme } from '@/lib/teamThemes';
 
 export default function Home() {
@@ -20,11 +20,9 @@ export default function Home() {
   const [selectedTires, setSelectedTires] = useState<string[] | null>(null);
 
   useEffect(() => {
-    // Automatically hide boot sequence after 2.5 seconds if not already skipped
     const timer = setTimeout(() => {
       setShowBoot(false);
     }, 2500);
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -47,11 +45,12 @@ export default function Home() {
     setCurrentStep(3);
   };
 
-  return (
-    <div className="relative w-full h-screen overflow-hidden">
-      {/* Background system */}
-      <BackgroundSystem />
+  const handleStepClick = (step: number) => {
+    setCurrentStep(step);
+  };
 
+  return (
+    <BackgroundSystem teamColor={selectedTeam?.primaryColor}>
       {/* Boot sequence overlay */}
       <AnimatePresence>
         {showBoot && <BootSequence onComplete={handleBootComplete} />}
@@ -68,43 +67,72 @@ export default function Home() {
         {/* Header */}
         <Header
           currentStep={currentStep}
-          selectedTeam={selectedTeam ? { name: selectedTeam.name, slug: selectedTeam.slug, primaryColor: selectedTeam.primaryColor } : undefined}
+          selectedTeam={
+            selectedTeam
+              ? { name: selectedTeam.name, slug: selectedTeam.slug, primaryColor: selectedTeam.primaryColor }
+              : undefined
+          }
           selectedCircuit={selectedCircuit ? { name: selectedCircuit.name, country: selectedCircuit.country } : undefined}
+          onStepClick={handleStepClick}
         />
 
         {/* Content area */}
-        <main className="relative pt-[var(--header-height)] w-full h-screen overflow-y-auto">
+        <main className="relative z-20 pointer-events-auto w-full h-screen overflow-hidden" style={{ paddingTop: 'var(--header-height)' }}>
           <AnimatePresence mode="wait">
             {/* Step 1: Team Selection */}
             {currentStep === 0 && (
-              <motion.div key="team" initial={{ opacity: 0, x: 60 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={spring.smooth}>
+              <motion.div
+                key="team"
+                className="w-full h-full"
+                initial={stepTransition.enter}
+                animate={stepTransition.center}
+                exit={stepTransition.exit}
+              >
                 <TeamSelectionStep onSelect={handleTeamSelect} />
               </motion.div>
             )}
 
             {/* Step 2: Circuit Selection */}
             {currentStep === 1 && selectedTeam && (
-              <motion.div key="circuit" initial={{ opacity: 0, x: 60 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={spring.smooth}>
+              <motion.div
+                key="circuit"
+                className="w-full h-full"
+                initial={stepTransition.enter}
+                animate={stepTransition.center}
+                exit={stepTransition.exit}
+              >
                 <CircuitSelectionStep onSelect={handleCircuitSelect} />
               </motion.div>
             )}
 
             {/* Step 3: Tire Selection */}
             {currentStep === 2 && selectedTeam && selectedCircuit && (
-              <motion.div key="tires" initial={{ opacity: 0, x: 60 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={spring.smooth}>
+              <motion.div
+                key="tires"
+                className="w-full h-full"
+                initial={stepTransition.enter}
+                animate={stepTransition.center}
+                exit={stepTransition.exit}
+              >
                 <TireSelectionStep onSelect={handleTireSelect} />
               </motion.div>
             )}
 
             {/* Step 4: Results */}
             {currentStep === 3 && selectedTeam && selectedCircuit && selectedTires && (
-              <motion.div key="results" initial={{ opacity: 0, x: 60 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={spring.smooth}>
+              <motion.div
+                key="results"
+                className="w-full h-full"
+                initial={stepTransition.enter}
+                animate={stepTransition.center}
+                exit={stepTransition.exit}
+              >
                 <ResultsDashboard team={selectedTeam} circuit={selectedCircuit} tires={selectedTires} />
               </motion.div>
             )}
           </AnimatePresence>
         </main>
       </motion.div>
-    </div>
+    </BackgroundSystem>
   );
 }

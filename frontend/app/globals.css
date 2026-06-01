@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Backgrounds — layered depth system */
+  /* Backgrounds */
   --bg-void: #050709;
   --bg-primary: #0b0f1a;
   --bg-elevated: #111827;
@@ -51,13 +51,16 @@
   --radius-card: 12px;
 
   /* Layout */
-  --header-height: 64px;
+  --header-height: 72px;
   --step-indicator-height: 4px;
 
   /* Fonts */
   --font-display: 'Orbitron', sans-serif;
   --font-ui: 'Rajdhani', sans-serif;
   --font-data: 'JetBrains Mono', monospace;
+
+  /* Team ambient color (set dynamically via JS) */
+  --team-ambient: transparent;
 }
 
 * {
@@ -80,7 +83,76 @@ body {
   overflow-x: hidden;
 }
 
-/* Grid overlay animation */
+/* ===== SCROLLBAR HIDING ===== */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== TYPOGRAPHY SCALE ===== */
+
+/* HERO -- step titles */
+.text-hero {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: clamp(28px, 4vw, 52px);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: white;
+  line-height: 1.1;
+}
+
+/* CARD TITLE -- team/circuit name */
+.text-card-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: clamp(22px, 2.8vw, 34px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: white;
+  line-height: 1.1;
+}
+
+/* STAT VALUE -- big numbers */
+.text-stat-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: clamp(18px, 2.2vw, 28px);
+  color: white;
+  font-variant-numeric: tabular-nums;
+}
+
+/* LABEL -- above a stat */
+.text-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* RESULT DATA -- lap times, deltas */
+.text-result {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 700;
+  color: white;
+  font-variant-numeric: tabular-nums;
+}
+
+/* BODY TEXT -- minimum 13px for interactive */
+.text-body {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ===== GRID OVERLAY ===== */
 .grid-overlay {
   position: fixed;
   inset: 0;
@@ -94,15 +166,11 @@ body {
 }
 
 @keyframes gridDrift {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: 40px 40px;
-  }
+  from { background-position: 0 0; }
+  to { background-position: 40px 40px; }
 }
 
-/* Vignette overlay */
+/* ===== VIGNETTE ===== */
 .vignette-overlay {
   position: fixed;
   inset: 0;
@@ -111,7 +179,7 @@ body {
   z-index: 2;
 }
 
-/* Noise texture */
+/* ===== NOISE TEXTURE ===== */
 .noise-texture {
   position: fixed;
   inset: 0;
@@ -122,57 +190,35 @@ body {
   background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100" height="100" fill="white" filter="url(%23noise)" /></svg>');
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--bg-primary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border-default);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--border-active);
-}
-
-/* Glow pulse animation */
+/* ===== GLOW PULSE ===== */
 @keyframes glowPulse {
-  0%, 100% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1;
-  }
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 
-/* Scan line animation */
+/* ===== SCAN LINE ===== */
 @keyframes scanLine {
-  from {
-    transform: translateY(-100%);
-  }
-  to {
-    transform: translateY(100vh);
-  }
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100vh); }
 }
 
-/* Text reveal */
+/* ===== TEXT REVEAL ===== */
 @keyframes textReveal {
-  from {
-    opacity: 0;
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
-  }
+  from { opacity: 0; clip-path: inset(0 100% 0 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
 }
 
-/* Button glow */
+/* ===== COLON PULSE (for time display) ===== */
+@keyframes colonPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.colon-pulse {
+  animation: colonPulse 1s ease-in-out infinite;
+}
+
+/* ===== BUTTON GLOW ===== */
 .btn-glow {
   position: relative;
   overflow: hidden;
@@ -194,33 +240,60 @@ body {
   left: 100%;
 }
 
-/* Accessibility: reduce motion */
+/* ===== TEAM AMBIENT BACKGROUND ORB ===== */
+.background-orb {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse 80% 60% at 50% -20%,
+    color-mix(in srgb, var(--team-ambient) 8%, transparent) 0%,
+    transparent 70%
+  );
+  transition: background 800ms ease;
+}
+
+/* ===== SVG TRACE ANIMATION ===== */
+@keyframes tracePath {
+  from { stroke-dashoffset: var(--path-length); }
+  to { stroke-dashoffset: 0; }
+}
+
+.circuit-trace-path {
+  animation: tracePath 1.4s ease-in-out forwards;
+}
+
+/* ===== NEON PILL BADGE ===== */
+.neon-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ===== ACCESSIBILITY ===== */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-
-  .grid-overlay {
-    animation: none;
-  }
+  .grid-overlay { animation: none; }
 }
 
-/* Focus visible for accessibility */
 :focus-visible {
   outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
 }
 
-/* Selection color */
 ::selection {
   background-color: var(--accent-red);
   color: var(--text-primary);
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }

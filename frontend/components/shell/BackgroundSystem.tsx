@@ -2,14 +2,18 @@
 
 import { useEffect, useRef } from 'react';
 
-export function BackgroundSystem() {
+interface BackgroundSystemProps {
+  teamColor?: string;
+  children?: React.ReactNode;
+}
+
+export function BackgroundSystem({ teamColor, children }: BackgroundSystemProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     const container = containerRef.current;
-    let animationId: number;
 
     const handleMouseMove = (e: MouseEvent) => {
       const { clientX, clientY } = e;
@@ -31,41 +35,71 @@ export function BackgroundSystem() {
     return () => container.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  // Update CSS custom property for team ambient color
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      '--team-ambient',
+      teamColor || 'transparent'
+    );
+  }, [teamColor]);
+
   return (
-    <div ref={containerRef} className="fixed inset-0 overflow-hidden bg-[var(--bg-void)]">
-      {/* Base background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[var(--bg-void)] to-[var(--bg-primary)]" />
-
-      {/* Parallax layer 1 - slow */}
-      <div
-        data-parallax="1"
-        className="absolute inset-0 opacity-8"
+    <div ref={containerRef} className="relative w-full h-full min-h-screen overflow-hidden" style={{ backgroundColor: 'var(--bg-void)' }}>
+      {/* Locked Background Sandbox Container */}
+      <div 
+        className="absolute inset-0 pointer-events-none select-none z-0"
         style={{
-          backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.15) 0%, transparent 50%)',
-          filter: 'blur(120px)',
-          willChange: 'transform',
+          width: '100vw',
+          height: '100vh',
+          position: 'fixed',
+          backgroundImage: `linear-gradient(rgba(10, 10, 12, 0.92), rgba(10, 10, 12, 0.92)), url('/marc-kleen-fJjtt4kHews-unsplash.jpg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
         }}
-      />
+      >
+        
+        {/* Team ambient orb */}
+        <div className="background-orb pointer-events-none" />
 
-      {/* Parallax layer 2 - medium */}
-      <div
-        data-parallax="2"
-        className="absolute inset-0 opacity-6"
-        style={{
-          backgroundImage: 'radial-gradient(circle at 30% 70%, rgba(255, 30, 30, 0.1) 0%, transparent 40%)',
-          filter: 'blur(140px)',
-          willChange: 'transform',
-        }}
-      />
+        {/* Parallax layer 1 - slow */}
+        <div
+          data-parallax="1"
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            opacity: 0.08,
+            backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.15) 0%, transparent 50%)',
+            filter: 'blur(120px)',
+            willChange: 'transform',
+          }}
+        />
 
-      {/* Grid overlay */}
-      <div className="grid-overlay" />
+        {/* Parallax layer 2 - medium */}
+        <div
+          data-parallax="2"
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            opacity: 0.06,
+            backgroundImage: 'radial-gradient(circle at 30% 70%, rgba(255, 30, 30, 0.1) 0%, transparent 40%)',
+            filter: 'blur(140px)',
+            willChange: 'transform',
+          }}
+        />
 
-      {/* Noise texture */}
-      <div className="noise-texture" />
+        {/* Grid overlay */}
+        <div className="grid-overlay absolute inset-0 z-10 pointer-events-none" />
 
-      {/* Vignette overlay */}
-      <div className="vignette-overlay" />
+        {/* Noise texture */}
+        <div className="noise-texture pointer-events-none" />
+
+        {/* Vignette overlay */}
+        <div className="vignette-overlay pointer-events-none" />
+      </div>
+
+      {/* Elevated Content Tier */}
+      <div className="relative w-full min-h-screen z-10 pointer-events-auto">
+        {children}
+      </div>
     </div>
   );
 }

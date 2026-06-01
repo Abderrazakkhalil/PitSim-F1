@@ -1,0 +1,98 @@
+[
+    {
+        "nom_circuit": "Bahrain",
+        "temp_ambiante_moy": 28.0,
+        "temp_piste_moy": 32.0,
+        "nb_virages_lents": 6,
+        "nb_virages_rapides": 9,
+        "degen_moy": 0.25,
+        "freq_safety_car": 30.0,
+        "proba_pluie": 5.0,
+        "cluster_id": 1,
+        "cluster_label": "Équilibré / Tout-temps"
+    },
+    {
+        "nom_circuit": "Monaco",
+        "temp_ambiante_moy": 23.0,
+        "temp_piste_moy": 45.0,
+        "nb_virages_lents": 12,
+        "nb_virages_rapides": 7,
+        "degen_moy": 0.1,
+        "freq_safety_car": 80.0,
+        "proba_pluie": 15.0,
+        "cluster_id": 0,
+        "cluster_label": "Urbain / Forte Traction"
+    },
+    {
+        "nom_circuit": "Silverstone",
+        "temp_ambiante_moy": 19.0,
+        "temp_piste_moy": 26.0,
+        "nb_virages_lents": 4,
+        "nb_virages_rapides": 14,
+        "degen_moy": 0.18,
+        "freq_safety_car": 40.0,
+        "proba_pluie": 60.0,
+        "cluster_id": 1,
+        "cluster_label": "Équilibré / Tout-temps"
+    },
+    {
+        "nom_circuit": "Spa-Francorchamps",
+        "temp_ambiante_moy": 16.0,
+        "temp_piste_moy": 22.0,
+        "nb_virages_lents": 5,
+        "nb_virages_rapides": 15,
+        "degen_moy": 0.15,
+        "freq_safety_car": 60.0,
+        "proba_pluie": 75.0,
+        "cluster_id": 1,
+        "cluster_label": "Équilibré / Tout-temps"
+    },
+    {
+        "nom_circuit": "Suzuka",
+        "temp_ambiante_moy": 21.0,
+        "temp_piste_moy": 28.0,
+        "nb_virages_lents": 4,
+        "nb_virages_rapides": 14,
+        "degen_moy": 0.22,
+        "freq_safety_car": 35.0,
+        "proba_pluie": 45.0,
+        "cluster_id": 1,
+        "cluster_label": "Équilibré / Tout-temps"
+    },
+    {
+        "nom_circuit": "Interlagos",
+        "temp_ambiante_moy": 24.0,
+        "temp_piste_moy": 35.0,
+        "nb_virages_lents": 5,
+        "nb_virages_rapides": 10,
+        "degen_moy": 0.2,
+        "freq_safety_car": 55.0,
+        "proba_pluie": 50.0,
+        "cluster_id": 1,
+        "cluster_label": "Équilibré / Tout-temps"
+    },
+    {
+        "nom_circuit": "Singapore",
+        "temp_ambiante_moy": 30.0,
+        "temp_piste_moy": 36.0,
+        "nb_virages_lents": 15,
+        "nb_virages_rapides": 8,
+        "degen_moy": 0.3,
+        "freq_safety_car": 100.0,
+        "proba_pluie": 20.0,
+        "cluster_id": 0,
+        "cluster_label": "Urbain / Forte Traction"
+    },
+    {
+        "nom_circuit": "Las Vegas",
+        "temp_ambiante_moy": 14.0,
+        "temp_piste_moy": 16.0,
+        "nb_virages_lents": 8,
+        "nb_virages_rapides": 9,
+        "degen_moy": 0.12,
+        "freq_safety_car": 40.0,
+        "proba_pluie": 0.0,
+        "cluster_id": 2,
+        "cluster_label": "Circuit Froid"
+    }
+]

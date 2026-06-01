@@ -1,0 +1,92 @@
+[
+  {
+    "model": "core.ecurie",
+    "pk": 1,
+    "fields": {
+      "nom": "Scuderia Demo",
+      "gamma": 1.02,
+      "T_pit": 2.5,
+      "delta": 0.9,
+      "profil": "Attaque-Equilibre",
+      "caracteristique": "Bonne gestion pneus, pitstops rapides"
+    }
+  },
+  {
+    "model": "core.ecurie",
+    "pk": 2,
+    "fields": {
+      "nom": "Team Conserv",
+      "gamma": 0.98,
+      "T_pit": 3.5,
+      "delta": 1.05,
+      "profil": "Conservation",
+      "caracteristique": "Faible dégradation, pitstops stables"
+    }
+  },
+  {
+    "model": "core.circuitcluster",
+    "pk": 1,
+    "fields": {
+      "nom_circuit": "Bahrain",
+      "temp_ambiante_moy": 28.0,
+      "temp_piste_moy": 32.0,
+      "nb_virages_lents": 6,
+      "nb_virages_rapides": 9,
+      "degen_moy": 0.25,
+      "freq_safety_car": 30.0,
+      "proba_pluie": 5.0,
+      "cluster_label": "Haute Usure Thermique"
+    }
+  },
+  {
+    "model": "core.circuitcluster",
+    "pk": 2,
+    "fields": {
+      "nom_circuit": "Monaco",
+      "temp_ambiante_moy": 23.0,
+      "temp_piste_moy": 45.0,
+      "nb_virages_lents": 12,
+      "nb_virages_rapides": 7,
+      "degen_moy": 0.10,
+      "freq_safety_car": 80.0,
+      "proba_pluie": 15.0,
+      "cluster_label": "Urbain / Forte Traction"
+    }
+  },
+  {
+    "model": "core.pneumatique",
+    "pk": 1,
+    "fields": {
+      "type_gomme": "Soft",
+      "alpha": 0.035,
+      "duree_max_tours": 22,
+      "conditions": "Sec",
+      "penalite_hors_cond": 2.0,
+      "usage": "Attaque"
+    }
+  },
+  {
+    "model": "core.pneumatique",
+    "pk": 2,
+    "fields": {
+      "type_gomme": "Medium",
+      "alpha": 0.02,
+      "duree_max_tours": 30,
+      "conditions": "Sec",
+      "penalite_hors_cond": 1.0,
+      "usage": "Polyvalent"
+    }
+  },
+  {
+    "model": "core.pneumatique",
+    "pk": 3,
+    "fields": {
+      "type_gomme": "Hard",
+      "alpha": 0.015,
+      "duree_max_tours": 40,
+      "conditions": "Sec",
+      "penalite_hors_cond": 1.5,
+      "usage": "Endurance"
+    }
+  }
+]

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PitSim-F1 v3.0 – Dashboard Stratégique</title>
+  <meta name="description" content="Résultats de simulation et stratégie optimale de pit-stop calculée par IA."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --f1-red:    #e10600;
+      --f1-dark:   #080808;
+      --f1-panel:  #111;
+      --f1-border: #222;
+      --f1-accent: #00d2ff;
+      --f1-gold:   #ffd700;
+      --f1-text:   #e8e8e8;
+      --f1-muted:  #6b7280;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--f1-dark); color: var(--f1-text); min-height: 100vh; }
+
+    /* ── Topbar ── */
+    .topbar {
+      background: linear-gradient(90deg, #0a0a0a 0%, #1a0000 60%, #0a0a0a 100%);
+      border-bottom: 2px solid var(--f1-red);
+      padding: 12px 28px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .topbar .logo { font-size: 1.4rem; font-weight: 900; letter-spacing: -1px; color: #fff; }
+    .topbar .logo span { color: var(--f1-gold); }
+    .topbar .meta { font-size: .8rem; color: var(--f1-muted); }
+    .topbar .meta strong { color: var(--f1-text); }
+
+    /* ── Layout ── */
+    .dash-wrap { max-width: 1280px; margin: 32px auto; padding: 0 16px; }
+    .section-title {
+      font-size: 1rem; font-weight: 700; color: var(--f1-accent);
+      border-left: 4px solid var(--f1-red); padding-left: 12px;
+      margin-bottom: 18px; text-transform: uppercase; letter-spacing: .06em;
+    }
+
+    /* ── Card ── */
+    .card-panel {
+      background: var(--f1-panel);
+      border: 1px solid var(--f1-border);
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+
+    /* ── Verdict ── */
+    .verdict-hero {
+      background: linear-gradient(135deg, #0d1a1f 0%, #0a1520 100%);
+      border: 2px solid var(--f1-accent);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .verdict-hero::before {
+      content: '';
+      position: absolute; top: -40px; right: -40px;
+      width: 180px; height: 180px;
+      background: radial-gradient(circle, rgba(0,210,255,.15) 0%, transparent 70%);
+    }
+    .verdict-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--f1-red); color: #fff;
+      font-weight: 800; font-size: .78rem;
+      padding: 4px 14px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: .1em;
+      margin-bottom: 12px;
+    }
+    .verdict-time {
+      font-size: 3rem; font-weight: 900; color: var(--f1-gold);
+      line-height: 1; margin-bottom: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+    .verdict-sub { font-size: .88rem; color: var(--f1-muted); margin-bottom: 20px; }
+
+    /* ── Stint timeline ── */
+    .stints-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .stint-card {
+      flex: 1; min-width: 150px;
+      background: #1a1a1a; border: 1px solid var(--f1-border);
+      border-radius: 10px; padding: 14px 16px;
+      position: relative;
+    }
+    .stint-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      border-radius: 10px 10px 0 0;
+    }
+    .stint-soft::before   { background: var(--f1-red); }
+    .stint-medium::before { background: var(--f1-gold); }
+    .stint-hard::before   { background: #e8e8e8; }
+    .stint-inter::before  { background: #22c55e; }
+    .stint-wet::before    { background: #3b82f6; }
+
+    .stint-num { font-size: .7rem; font-weight: 700; color: var(--f1-muted); text-transform: uppercase; margin-bottom: 6px; }
+    .stint-gomme { font-size: 1rem; font-weight: 700; }
+    .stint-tours { font-size: .82rem; color: var(--f1-muted); }
+    .stint-arrow {
+      align-self: center; font-size: 1.2rem; color: var(--f1-border);
+      flex-shrink: 0;
+    }
+
+    /* ── Tableau comparatif ── */
+    .table-dark-custom {
+      --bs-table-bg: transparent;
+      --bs-table-striped-bg: rgba(255,255,255,.03);
+      --bs-table-hover-bg: rgba(0,210,255,.07);
+      --bs-table-border-color: #222;
+      color: var(--f1-text);
+      font-size: .88rem;
+    }
+    .table-dark-custom thead th {
+      background: #1a1a1a;
+      color: var(--f1-accent);
+      font-weight: 700;
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      border-color: #333;
+    }
+    .best-row { background: rgba(0,210,255,.09) !important; font-weight: 700; }
+    .best-row td:first-child { color: var(--f1-accent); }
+
+    /* ── Indicateur R² / RMSE ── */
+    .metric-badge {
+      display: inline-flex; flex-direction: column; align-items: center;
+      background: #1a1a1a; border: 1px solid var(--f1-border);
+      border-radius: 10px; padding: 14px 22px;
+      min-width: 130px;
+    }
+    .metric-value { font-size: 1.6rem; font-weight: 900; color: var(--f1-accent); }
+    .metric-label { font-size: .7rem; color: var(--f1-muted); text-transform: uppercase; letter-spacing: .08em; }
+    .metric-good   { color: #22c55e; }
+    .metric-warn   { color: var(--f1-gold); }
+    .metric-bad    { color: var(--f1-red); }
+
+    /* ── Crossovers ── */
+    .crossover-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px; background: #1a1a1a; border-radius: 8px;
+      border-left: 3px solid var(--f1-gold);
+      margin-bottom: 10px; font-size: .86rem;
+    }
+    .crossover-tour {
+      background: var(--f1-gold); color: #000;
+      font-weight: 800; font-size: .78rem;
+      padding: 2px 10px; border-radius: 12px;
+      white-space: nowrap;
+    }
+
+    /* ── Chart container ── */
+    .chart-wrap {
+      position: relative;
+      width: 100%; height: 380px;
+    }
+
+    /* ── Export buttons ── */
+    .btn-export {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #1a1a1a; border: 1px solid var(--f1-border);
+      color: var(--f1-text); border-radius: 8px; padding: 10px 20px;
+      font-weight: 600; font-size: .88rem;
+      cursor: pointer; transition: all .18s;
+      text-decoration: none;
+    }
+    .btn-export:hover { border-color: var(--f1-accent); color: var(--f1-accent); background: rgba(0,210,255,.07); }
+    .btn-export-red { border-color: var(--f1-red); color: var(--f1-red); }
+    .btn-export-red:hover { background: rgba(225,6,0,.12); color: var(--f1-red); border-color: var(--f1-red); }
+
+    /* ── Back button ── */
+    .btn-back {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--f1-muted); font-size: .85rem;
+      text-decoration: none; transition: color .18s;
+    }
+    .btn-back:hover { color: var(--f1-text); }
+
+    /* ── Error state ── */
+    .error-panel {
+      text-align: center; padding: 60px 20px;
+    }
+    .error-panel .err-icon { font-size: 3rem; margin-bottom: 16px; color: var(--f1-red); }
+  </style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div>
+    <div class="logo">Pit<span>Sim</span>-F1 <span style="color:rgba(255,255,255,.4)">v3.0</span></div>
+  </div>
+  <div class="meta">
+    <strong>{{ ecurie_nom }}</strong> &nbsp;·&nbsp; Circuit : <strong>{{ circuit_nom }}</strong>
+    &nbsp;·&nbsp; {{ N }} tours
+  </div>
+  <a href="{% url 'race:config' %}" class="btn-back">
+    <i class="bi bi-arrow-left-circle"></i> Nouvelle simulation
+  </a>
+</div>
+
+<div class="dash-wrap">
+
+  {% if result.status == 'success' %}
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- BLOC 1 : VERDICT OPTIMAL -->
+  <!-- ═══════════════════════════════════════════════ -->
+  {% with best=result.meilleure_strategie_globale %}
+  <div class="verdict-hero">
+    <div class="verdict-badge"><i class="bi bi-trophy-fill me-1"></i> Stratégie Optimale Recommandée</div>
+    <div class="verdict-time">
+      {% with h=best.temps_total_s|floatformat:"0" %}
+      {% widthratio best.temps_total_s 60 1 as min_raw %}
+      {{ best.temps_total_s|floatformat:"2" }} s
+      {% endwith %}
+    </div>
+    <div class="verdict-sub">
+      <i class="bi bi-signpost-split me-1"></i>
+      <strong>{{ best.nombre_arrets }} arrêt{{ best.nombre_arrets|pluralize }}</strong> aux stands
+    </div>
+
+    <!-- Timeline des relais -->
+    <div class="stints-row">
+      {% for relais in best.relais %}
+        {% if not forloop.first %}
+          <div class="stint-arrow"><i class="bi bi-chevron-right"></i></div>
+        {% endif %}
+        <div class="stint-card stint-{{ relais.gomme|lower }}">
+          <div class="stint-num">Relais {{ relais.num_relais }}</div>
+          <div class="stint-gomme">
+            {% if relais.gomme == 'Soft' %}🔴{% elif relais.gomme == 'Medium' %}🟡{% elif relais.gomme == 'Hard' %}⚪{% elif relais.gomme == 'Inter' %}🟢{% else %}🔵{% endif %}
+            {{ relais.gomme }}
+          </div>
+          <div class="stint-tours">Tours {{ relais.tour_depart }} → {{ relais.tour_fin }}</div>
+          <div class="stint-tours" style="color:#555; font-size:.75rem;">
+            ({{ relais.tour_fin|add:"-1"|add:relais.tour_depart }} tours)
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endwith %}
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- BLOC 2 : GRAPHIQUE INTERACTIF (Chart.js) -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="card-panel">
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+      <div class="section-title mb-0">
+        <i class="bi bi-graph-up me-1"></i> Évolution des temps au tour
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{% url 'race:export_csv' %}" class="btn-export">
+          <i class="bi bi-filetype-csv"></i> Export CSV
+        </a>
+        <button onclick="exportChartPNG()" class="btn-export btn-export-red">
+          <i class="bi bi-image"></i> Export PNG
+        </button>
+      </div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="lapTimesChart"></canvas>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- BLOC 3 : TABLEAU COMPARATIF -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="card-panel">
+    <div class="section-title"><i class="bi bi-table me-1"></i> Comparatif des Stratégies</div>
+    <div class="table-responsive">
+      <table class="table table-hover table-dark-custom align-middle">
+        <thead>
+          <tr>
+            <th>Stratégie</th>
+            <th>Temps Total (s)</th>
+            <th>Tours d'arrêt</th>
+            <th>Composés utilisés</th>
+            <th>Δ vs Optimal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% with best_time=result.meilleure_strategie_globale.temps_total_s %}
+          {% for strat_key, strat in result.comparatif_strategies.items %}
+          <tr class="{% if strat.temps_total_s == best_time %}best-row{% endif %}">
+            <td>
+              {% if strat.temps_total_s == best_time %}
+                <i class="bi bi-star-fill text-warning me-1"></i>
+              {% endif %}
+              {{ strat_key|title }}
+            </td>
+            <td class="fw-bold">{{ strat.temps_total_s }}</td>
+            <td>
+              {% for t in strat.tours_arret %}
+                <span class="badge bg-secondary">T.{{ t }}</span>
+              {% endfor %}
+            </td>
+            <td>
+              {% for g in strat.gommes %}
+                <span class="badge" style="background:{% if g == 'Soft' %}#e10600{% elif g == 'Medium' %}#b59000{% elif g == 'Hard' %}#555{% elif g == 'Inter' %}#166534{% else %}#1e3a8a{% endif %}">{{ g }}</span>
+              {% endfor %}
+            </td>
+            <td>
+              {% if strat.temps_total_s == best_time %}
+                <span class="text-success fw-bold">— Optimale</span>
+              {% else %}
+                <span class="text-danger">+{{ strat.temps_total_s|floatformat:"2" }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          {% endwith %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- BLOC 4 : INDICATEUR DE CONFIANCE IA -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="card-panel">
+    <div class="section-title"><i class="bi bi-cpu me-1"></i> Fiabilité du Modèle ML (IA-1)</div>
+    <div class="d-flex gap-3 flex-wrap">
+      <div class="metric-badge">
+        <div class="metric-value metric-good" id="ml-r2">—</div>
+        <div class="metric-label">Score R²</div>
+      </div>
+      <div class="metric-badge">
+        <div class="metric-value metric-good" id="ml-rmse">—</div>
+        <div class="metric-label">RMSE (s/tour)</div>
+      </div>
+      <div class="metric-badge">
+        <div class="metric-value" id="ml-mode" style="font-size:1rem;">—</div>
+        <div class="metric-label">Mode actif</div>
+      </div>
+    </div>
+    <p class="mt-3 text-muted" style="font-size:.8rem;">
+      <i class="bi bi-info-circle me-1"></i>
+      Les métriques R² et RMSE sont calculées lors de l'entraînement (validation croisée 5-fold). 
+      Un R² ≥ 0,90 et RMSE ≤ 0,3 s/tour indiquent un modèle de haute fiabilité.
+    </p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- BLOC 5 : POINTS DE CROISEMENT -->
+  <!-- ═══════════════════════════════════════════════ -->
+  {% if result.crossovers_detectes %}
+  <div class="card-panel">
+    <div class="section-title"><i class="bi bi-signpost-2 me-1"></i> Points de Croisement Détectés</div>
+    {% for cx in result.crossovers_detectes %}
+    <div class="crossover-item">
+      <span class="crossover-tour">Tour {{ cx.tour }}</span>
+      <span>{{ cx.raison }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <!-- ── Erreur ── -->
+  <div class="card-panel error-panel">
+    <div class="err-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+    <h2 class="h5 mb-3">Erreur de simulation</h2>
+    <p class="text-muted">{{ result.message|default:"Aucune stratégie viable n'a pu être calculée." }}</p>
+    <a href="{% url 'race:config' %}" class="btn-export mt-3">
+      <i class="bi bi-arrow-left"></i> Retour à la configuration
+    </a>
+  </div>
+  {% endif %}
+
+</div><!-- /dash-wrap -->
+
+<!-- Chart.js 4.x -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<!-- Script principal du Dashboard -->
+<script>
+  /* ── Données injectées depuis Django (JSON) ── */
+  const CHART_SERIES = {{ chart_series_json|safe }};
+  const N_TOURS      = {{ N }};
+</script>
+{% load static %}
+<script src="{% static 'race/js/dashboard.js' %}" defer></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* ── Chargement des métriques ML depuis la session (si disponibles) ── */
+window.addEventListener('DOMContentLoaded', function() {
+  /* Tente de lire les métriques stockées dans localStorage par le pipeline d'entraînement */
+  try {
+    const r2   = localStorage.getItem('ml_r2');
+    const rmse = localStorage.getItem('ml_rmse');
+    const mode = localStorage.getItem('ml_mode');
+
+    if (r2)   { document.getElementById('ml-r2').textContent   = parseFloat(r2).toFixed(3); }
+    if (rmse) { document.getElementById('ml-rmse').textContent = parseFloat(rmse).toFixed(3); }
+    document.getElementById('ml-mode').textContent = mode || 'ML Actif';
+
+    const r2Val = parseFloat(r2);
+    const el    = document.getElementById('ml-r2');
+    if (r2Val >= 0.90) { el.className = 'metric-value metric-good'; }
+    else if (r2Val >= 0.80) { el.className = 'metric-value metric-warn'; }
+    else { el.className = 'metric-value metric-bad'; }
+  } catch(e) {
+    document.getElementById('ml-mode').textContent = 'Fallback';
+  }
+});
+</script>
+
+</body>
+</html>

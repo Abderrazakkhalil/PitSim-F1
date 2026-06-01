@@ -1,0 +1,27 @@
+# PitSim-F1 v3.0 — Dépendances Python
+# Installer avec : pip install -r requirements.txt
+
+# ── Framework Web ──
+Django==4.2.13
+
+# ── Machine Learning & Data ──
+scikit-learn==1.4.2
+xgboost==2.0.3
+numpy==1.26.4
+pandas==2.2.2
+pyarrow==16.1.0       # Export Parquet
+joblib==1.4.2
+
+# ── Données F1 ──
+fastf1==3.3.9
+
+# ── Base de données (production) ──
+psycopg2-binary==2.9.9
+
+# ── Tests ──
+pytest==8.2.2
+pytest-django==4.8.0
+
+# ── CORS ──
+django-cors-headers==4.3.1
+

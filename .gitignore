@@ -1,0 +1,88 @@
+# Byte-compiled / caches
+__pycache__/
+*__pycache__/
+
+# Python virtualenvs
+.venv/
+venv/
+ENV/
+env/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Django
+db.sqlite3
+*.log
+local_settings.py
+instance/
+
+# FastF1 cache
+fastf1_cache/
+pitsim_f1/fastf1_cache/
+fastf1_http_cache.sqlite
+
+# Machine learning artifacts / data
+*.pkl
+*.pt
+*.h5
+*.ckpt
+*.joblib
+*.model
+*.sav
+*.parquet
+ml/models/
+ml/data/
+pitsim_f1/ml/models/
+pitsim_f1/ml/data/
+
+# Node / frontend
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-lock.yaml
+# keep package-lock.json for reproducible installs
+
+# Vite / React
+.vite/
+dist/
+build/
+
+# Env files
+.env
+.env.*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.envrc
+secrets.json
+
+# IDEs / Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs, temp
+logs/
+tmp/
+temp/
+
+# Misc
+*.pyc
+*.pyo
+*.pyd
+
+# Keep placeholder files if needed
+static/.keep

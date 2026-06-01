@@ -25,8 +25,19 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "corsheaders",
-    # Apps PitSim-F1
+]
+
+# `django-cors-headers` is optional for running tests locally; include it only when installed
+try:
+    import corsheaders  # type: ignore
+    INSTALLED_APPS += ["corsheaders"]
+    CORS_MIDDLEWARE = ["corsheaders.middleware.CorsMiddleware"]
+except Exception:
+    CORS_MIDDLEWARE = []
+    # Note: when corsheaders is missing, cross-origin requests in dev will not be handled by this middleware.
+    
+# Ajout des applications du projet (toujours)
+INSTALLED_APPS += [
     "core",
     "race",
     "optimizer",
@@ -37,7 +48,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
+    # Conditionally insert CORS middleware if available
+] + CORS_MIDDLEWARE + [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",

@@ -105,6 +105,110 @@ Le frontend attend le backend sur `http://localhost:8000` (constante `API_BASE` 
   - Frontend React complet pour configuration et affichage (`frontend/src/*`).
   - Endpoints backend principaux et liaison frontend ↔ backend (`race/views.py`).
   - Moteur de simulation tour-à-tour (`race/simulation_engine.py`) avec intégration du prédicteur et fallback.
+
+**PitSim‑F1 — README concis et complet**
+
+Objectif
+ - PitSim‑F1 est un simulateur hybride destiné à produire des stratégies de course réalistes en Formule 1. Il combine :
+   - un module de Machine Learning pour prédire la dégradation pneumatique, 
+   - un moteur de simulation tour‑à‑tour qui assemble fuel, météo et dégradation,
+   - un optimiseur (programmation dynamique) qui décide les arrêts et gommes,
+   - un pipeline de clustering offline pour labelliser les circuits.
+
+Pourquoi ce projet existe
+ - En stratégie F1, la décision optimale (où s'arrêter, quelles gommes) dépend d'effets physiques, de données historiques et d'un problème combinatoire. PitSim‑F1 donne une réponse reproductible et traçable en agrégeant apprentissage statistique, simulation et optimisation.
+
+Principes d'utilisation (flux en une lecture)
+ - L'utilisateur sélectionne une écurie et un circuit dans l'interface.
+ - Le backend calcule le nombre officiel de tours à partir des métadonnées du circuit (voir section suivante).
+ - Le serveur construit une prévision météo simplifiée, pré‑calcule la matrice de dégradation (ML ou fallback analytique),
+   calcule les coûts des relais, exécute la programmation dynamique et renvoie la stratégie optimale (arrêts, gommes, temps estimés).
+
+Calcul du nombre officiel de tours
+ - Règle simple et conforme : la distance cible d'une course est ~305 km, sauf Monaco (~260 km). Le Backend expose cette logique de manière centralisée dans le modèle `CircuitCluster` (propriété `official_laps`).
+ - Formule utilisée : si `length_km` est disponible :
+
+    official_laps = ceil(target_race_distance_km / length_km)
+
+ - Le front-end affiche `official_laps` fourni par l'API et ne propose plus de champ libre pour `nombre_tours`. L'API accepte toutefois un override optionnel pour compatibilité tests.
+
+Principaux fichiers et où regarder
+ - Modèles métier : [pitsim_f1/core/models.py](pitsim_f1/core/models.py)
+ - Vues / API : [pitsim_f1/race/views.py](pitsim_f1/race/views.py)
+ - Moteur de simulation : [pitsim_f1/race/simulation_engine.py](pitsim_f1/race/simulation_engine.py)
+ - Optimiseur (DP) : [pitsim_f1/optimizer/dynamic_prog.py](pitsim_f1/optimizer/dynamic_prog.py)
+ - Prédicteur dégradation (ML) : [pitsim_f1/race/ml/degradation_ml.py](pitsim_f1/race/ml/degradation_ml.py)
+ - Pipeline de clustering (offline) : [pitsim_f1/clustering/circuit_clustering.py](pitsim_f1/clustering/circuit_clustering.py)
+ - Frontend formulaire : [frontend/src/components/RaceConfigForm.jsx](frontend/src/components/RaceConfigForm.jsx)
+
+Composants et rôles (en langage métier, lisible)
+ - Clustering (offline) : regroupe les circuits selon leurs caractéristiques (température, usure, virages). Cela aide à interpréter rapidement un circuit et peut servir plus tard comme feature pour l'IA.
+ - Machine Learning : prédit la perte de performance (s/tour) liée à l'usure des pneus, en tenant compte du tour sur le relais, température et type de gomme. Fournit une fonction pragmatique : entrée = (n, temp, circuit, gomme) → sortie = dégradation (s).
+ - Simulation : combine la prédiction ML (ou le modèle analytique de secours) avec l'effet carburant et les pénalités météo pour produire des temps au tour réalistes par relais.
+ - Optimisation : résout le problème combinatoire global (qui minimise le temps total ?) en testant les partitions de la course en relais et en choisissant gommes + arrêts via programmation dynamique.
+
+Pourquoi ces choix sont raisonnables
+ - L'approche hybride sépare les responsabilités : ML capture les patterns locaux et non linéaires; la simulation assemble la physique et l'ordonnancement temporel; la DP garantit une stratégie globale optimale sous contraintes (durée maxi des gommes, pit time). Le clustering apporte lisibilité et stabilité statistique en grouping offline.
+
+Données — ce qui entre et sort à chaque étape (lecture unique)
+ - Entrée utilisateur : `ecurie_id`, `circuit_id`, `t_base`, `meteo_initiale`, `tour_pluie` (optionnel).
+ - Backend charge : paramètres d'écurie (`Ecurie`), caractéristiques de circuit (`CircuitCluster`), définitions pneus (`Pneumatique`).
+ - ML reçoit : `n (tour sur stint)`, `TrackTemp`, `Sconduite`, `Ccircuit`, `type__gomme` → produit `degradation (s)`.
+ - Simulation reçoit : `t_base`, `beta_essence`, `degradation`, `penalite_meteo` → produit `t_tour` pour chaque tour.
+ - Optimiseur reçoit : matrice des coûts relais (m→n) → produit la stratégie optimale (arrêts, gommes, temps total) et séries pour affichage.
+
+Exécution locale — commandes rapides
+ - Installer dépendances Python :
+
+```bash
+pip install -r pitsim_f1/requirements.txt
+```
+
+ - Générer et appliquer migrations, charger fixtures :
+
+```bash
+python pitsim_f1/manage.py makemigrations core
+python pitsim_f1/manage.py migrate
+python pitsim_f1/manage.py loaddata core/fixtures/initial_data.json
+```
+
+ - Lancer le backend :
+
+```bash
+python pitsim_f1/manage.py runserver
+```
+
+ - Frontend (dans `frontend/`) :
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Tests unitaires
+ - Tests ciblés sur le moteur de simulation :
+
+```bash
+PYTHONPATH=. DJANGO_SETTINGS_MODULE=pitsim_f1.settings pytest pitsim_f1/race/tests/test_simulation.py -q
+```
+
+Décisions d'architecture et justification accessible
+ - FAI : la logique du calcul des tours est centralisée dans le backend pour garantir conformité métier et éviter des divergences UI/back‑end.
+ - ML vs analytique : le code implémente un fallback analytique (alpha * gamma * n^delta) pour garantir robustesse quand le modèle ML n'est pas disponible.
+ - Clustering offline : pas exécuté en runtime critique — il enrichit les métadonnées et l'UX.
+
+Limitations et travaux recommandés
+ - Backfill des `length_km` pour tous les circuits (important pour `official_laps`).
+ - Retrain ML avec données fastf1 complètes et cross‑validation par circuit (leave‑one‑circuit‑out) pour tester généralisation.
+ - Ajouter tests d'intégration couvrant `api_optimize` end‑to‑end.
+ - Optionnel : utiliser `cluster_label` comme feature ML ou regrouper pour increase data pooling.
+
+Qui contacter / suite
+ - Pour déploiement ou tests, exécutez les commandes ci‑dessus et envoyez moi les logs d'erreur si une étape échoue.
+
+---
+Cette page vise à fournir une compréhension complète et opérationnelle du projet en une lecture. Si vous voulez, je peux transformer cette version en une page plus courte pour présentation exécutive ou en mode tutoriel pas‑à‑pas.
   - Optimiseur par programmation dynamique (`optimizer/dynamic_prog.py`) avec vectorisation et reconstruction de stratégie.
   - Pipeline de clustering fonctionnel (`clustering/circuit_clustering.py`) et export JSON (`clustering/results/circuit_clusters.json` existe).
   - Pipeline d'entraînement ML (`ml/train_model.py`) qui écrit `ml/models/degradation.pkl` quand exécuté avec des données.

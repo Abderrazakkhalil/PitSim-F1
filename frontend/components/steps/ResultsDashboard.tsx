@@ -154,11 +154,48 @@ interface ResultsDashboardProps {
   team: TeamTheme;
   circuit: { id: number; name: string; country: string };
   tires: string[];
+  onReset: () => void;
 }
 
-export function ResultsDashboard({ team, circuit, tires }: ResultsDashboardProps) {
+export function ResultsDashboard({ team, circuit, tires, onReset }: ResultsDashboardProps) {
   const [displayMs, setDisplayMs] = useState(0);
+  const [isCopied, setIsCopied] = useState(false);
   const animStartRef = useRef<number | null>(null);
+
+  const handleExportPdf = () => {
+    if (typeof window !== 'undefined') {
+      window.print();
+    }
+  };
+
+  const handleCopyStrategy = () => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      const formattedStints = stints
+        .map((s, idx) => `  Stint ${idx + 1} (${s.compound}): Laps ${s.startLap}-${s.endLap} (${s.endLap - s.startLap + 1} L)`)
+        .join('\n');
+      
+      const copyText = `PITSIM F1 - RACE STRATEGY REPORT\n` +
+        `===================================\n` +
+        `Team: ${team.name}\n` +
+        `Circuit: ${circuit.name}\n` +
+        `Tire Strategy: ${tires.join(' - ')}\n\n` +
+        `Optimal Stints:\n` +
+        `${formattedStints}\n\n` +
+        `Estimated Total Time: 1:18:42.337\n` +
+        `Estimated Best Lap: 1:21.046\n` +
+        `Risk Level: 7/10\n` +
+        `===================================`;
+      
+      navigator.clipboard.writeText(copyText)
+        .then(() => {
+          setIsCopied(true);
+          setTimeout(() => setIsCopied(false), 2000);
+        })
+        .catch((err) => {
+          console.error("Failed to copy text: ", err);
+        });
+    }
+  };
 
   /* Animated time counter ------------------------------------------ */
   useEffect(() => {
@@ -210,7 +247,7 @@ export function ResultsDashboard({ team, circuit, tires }: ResultsDashboardProps
       {/* ============================================================ */}
       {/* MAIN CONTENT                                                 */}
       {/* ============================================================ */}
-      <div className="px-8 pb-8">
+      <div className="px-8 pb-24">
         {/* 2-Column split ------------------------------------------- */}
         <div className="grid grid-cols-3 gap-8 mb-8">
           {/* LEFT: Degradation Chart (col-span-2) */}
@@ -721,10 +758,11 @@ export function ResultsDashboard({ team, circuit, tires }: ResultsDashboardProps
           initial="hidden"
           animate="visible"
           variants={panelStagger}
-          className="flex gap-5 justify-center pb-12 pt-4"
+          className="flex gap-5 justify-center pb-24 pt-4"
         >
           {/* EXPORT PDF */}
           <button
+            onClick={handleExportPdf}
             className="px-8 py-3 rounded-lg font-black uppercase tracking-widest text-sm transition-all cursor-pointer"
             style={{
               fontFamily: 'var(--font-ui)',
@@ -746,27 +784,32 @@ export function ResultsDashboard({ team, circuit, tires }: ResultsDashboardProps
 
           {/* COPY STRATEGY */}
           <button
+            onClick={handleCopyStrategy}
             className="px-8 py-3 rounded-lg font-black uppercase tracking-widest text-sm transition-all cursor-pointer"
             style={{
               fontFamily: 'var(--font-ui)',
-              backgroundColor: 'rgba(0,255,133,0.12)',
+              backgroundColor: isCopied ? 'rgba(0,255,133,0.25)' : 'rgba(0,255,133,0.12)',
               border: '2px solid rgba(0,255,133,0.4)',
               color: 'var(--accent-green)',
+              boxShadow: isCopied ? '0 0 24px rgba(0,255,133,0.35)' : 'none',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'rgba(0,255,133,0.25)';
               e.currentTarget.style.boxShadow = '0 0 24px rgba(0,255,133,0.35)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(0,255,133,0.12)';
-              e.currentTarget.style.boxShadow = 'none';
+              if (!isCopied) {
+                e.currentTarget.style.backgroundColor = 'rgba(0,255,133,0.12)';
+                e.currentTarget.style.boxShadow = 'none';
+              }
             }}
           >
-            COPY STRATEGY
+            {isCopied ? 'COPIED!' : 'COPY STRATEGY'}
           </button>
 
           {/* RUN AGAIN */}
           <button
+            onClick={onReset}
             className="px-8 py-3 rounded-lg font-black uppercase tracking-widest text-sm transition-all cursor-pointer"
             style={{
               fontFamily: 'var(--font-ui)',

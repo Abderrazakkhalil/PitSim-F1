@@ -127,7 +127,17 @@ export default function Home() {
                 animate={stepTransition.center}
                 exit={stepTransition.exit}
               >
-                <ResultsDashboard team={selectedTeam} circuit={selectedCircuit} tires={selectedTires} />
+                <ResultsDashboard
+                  team={selectedTeam}
+                  circuit={selectedCircuit}
+                  tires={selectedTires}
+                  onReset={() => {
+                    setCurrentStep(0);
+                    setSelectedTeam(null);
+                    setSelectedCircuit(null);
+                    setSelectedTires(null);
+                  }}
+                />
               </motion.div>
             )}
           </AnimatePresence>
